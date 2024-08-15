@@ -93,6 +93,7 @@ export default () => {
                 <Nav.Link as={HashLink} to="#pages">Pages</Nav.Link>
                 <Nav.Link as={HashLink} to="#folder" className="d-sm-none d-xl-inline">Folder Structure</Nav.Link>
                 <Nav.Link as={HashLink} to="#getting-started">Getting Started</Nav.Link>
+                <Nav.Link as={HashLink} to="examples/sign-in">Login</Nav.Link>
                 <Nav.Link as={HashLink} to="#download">Upgrade to Pro</Nav.Link>
               </Nav>
             </Navbar.Collapse>
