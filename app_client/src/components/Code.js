@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Card, Button, Tooltip, OverlayTrigger } from '@themesberg/react-bootstrap';
-import Highlight, { Prism } from 'prism-react-renderer';
+import  { Highlight,Prism } from 'prism-react-renderer'; // <-- Aquí está la importación nombrada
 
 import themeStyle from "../assets/syntax-themes/ghcolors.json";
 
@@ -47,4 +46,3 @@ export default (props) => {
     </Highlight>
   );
 };
-
