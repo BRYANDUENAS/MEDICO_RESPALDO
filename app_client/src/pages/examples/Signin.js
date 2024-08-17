@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState,useEffect  } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faUser, faUnlockAlt } from "@fortawesome/free-solid-svg-icons";
 import { faFacebookF, faGithub, faTwitter } from "@fortawesome/free-brands-svg-icons";
@@ -8,7 +8,10 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 import { Routess } from "../../routes";
-import BgImage from "../../assets/img/illustrations/signin.svg";
+import BgImage from "../../assets/img/image_login.jpg";
+import '../../css/login.css';
+
+/* styles.css o cualquier archivo CSS que uses */
 
 const  LoginPage=() => {
   const [username, setUsername] = useState("");
@@ -40,16 +43,30 @@ const  LoginPage=() => {
     }
   };
 
+  useEffect(() => {
+    // Añadir la clase de animación cuando el componente se monta
+    const rowElement = document.querySelector(".slide-in-row");
+    if (rowElement) {
+      rowElement.classList.add("slide-in");
+    }
+  }, []);
+
   return (
-    <main>
+    <main  style={{ backgroundImage: `url(${BgImage})`,backgroundSize: 'cover',  // Asegura que la imagen cubra todo el área
+    backgroundPosition: 'center 0px', // Centra la imagen
+    backgroundRepeat: 'no-repeat', // Evita que la imagen se repita
+    height: '100vh', // Ajusta la altura del contenedor a la altura completa de la ventana
+    width: '100vw',  // Ajusta el ancho del contenedor a todo el ancho de la ventana
+    margin:0, // Elimina márgenes para asegurar que el contenedor cubra todo el viewport
+    padding:0, }}>
       <section className="d-flex align-items-center my-5 mt-lg-6 mb-lg-5">
-        <Container>
-          <p className="text-center">
+        <Container className="d-flex">
+          {/*<p className="text-center">
             <Card.Link as={Link} to={Routess.DashboardOverview.path} className="text-gray-700">
               <FontAwesomeIcon icon={faAngleLeft} className="me-2" /> Back to homepage
             </Card.Link>
-          </p>
-          <Row className="justify-content-center form-bg-image" style={{ backgroundImage: `url(${BgImage})` }}>
+          </p>*/}
+          <Row className="justify-content-start form-bg-image slide-in-row">
             <Col xs={12} className="d-flex align-items-center justify-content-center">
               <div className="bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
                 <div className="text-center text-md-center mb-4 mt-md-0">

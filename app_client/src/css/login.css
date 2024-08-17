@@ -1,0 +1,17 @@
+/* styles.css o cualquier archivo CSS que uses */
+
+@keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .slide-in {
+    animation: slideInFromRight 4s ease-out forwards;
+  }
+  
