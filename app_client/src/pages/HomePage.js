@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes,Navigate } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { Routess } from "../routes";
 
 // pages
@@ -48,6 +48,7 @@ import Tables from "./components/Tables";
 import Tabs from "./components/Tabs";
 import Tooltips from "./components/Tooltips";
 import Toasts from "./components/Toasts";
+import { PrivateRoutes } from '../routes/PrivateRoutes';
 
 const RouteWithLoader = ({ element: Element, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
@@ -74,7 +75,7 @@ const RouteWithSidebar = ({ element: Element, ...rest }) => {
   }, []);
 
   const localStorageIsSettingsVisible = () => {
-    return localStorage.getItem('settingsVisible') === 'false' ? false : true
+    return localStorage.getItem('settingsVisible') === 'false' ? false : true;
   }
 
   const [showSettings, setShowSettings] = useState(localStorageIsSettingsVisible);
@@ -86,7 +87,7 @@ const RouteWithSidebar = ({ element: Element, ...rest }) => {
 
   return (
     <>
-       <Preloader show={loaded ? false : true} />
+      <Preloader show={loaded ? false : true} />
       <Sidebar />
 
       <main className="content">
@@ -97,9 +98,9 @@ const RouteWithSidebar = ({ element: Element, ...rest }) => {
     </>
   );
 };
+
 export default () => (
   <Routes>
-    <Route path={Routess.Presentation.path} element={<RouteWithLoader element={Presentation} />} />
     <Route path={Routess.Signin.path} element={<RouteWithLoader element={Signin} />} />
     <Route path={Routess.Signup.path} element={<RouteWithLoader element={Signup} />} />
     <Route path={Routess.ForgotPassword.path} element={<RouteWithLoader element={ForgotPassword} />} />
@@ -108,14 +109,17 @@ export default () => (
     <Route path={Routess.NotFound.path} element={<RouteWithLoader element={NotFoundPage} />} />
     <Route path={Routess.ServerError.path} element={<RouteWithLoader element={ServerError} />} />
 
-    {/* pages */}
-    <Route path={Routess.DashboardOverview.path} element={<RouteWithSidebar element={DashboardOverview} />} />
-    <Route path={Routess.Upgrade.path} element={<RouteWithSidebar element={Upgrade} />} />
-    <Route path={Routess.Transactions.path} element={<RouteWithSidebar element={Transactions} />} />
-    <Route path={Routess.Settings.path} element={<RouteWithSidebar element={Settings} />} />
-    <Route path={Routess.BootstrapTables.path} element={<RouteWithSidebar element={BootstrapTables} />} />
+    {/* Rutas privadas */}
+    <Route element={<PrivateRoutes />}>
+      <Route path={Routess.Presentation.path} element={<RouteWithLoader element={Presentation} />} />
+      <Route path={Routess.DashboardOverview.path} element={<RouteWithSidebar element={DashboardOverview} />} />
+      <Route path={Routess.Upgrade.path} element={<RouteWithSidebar element={Upgrade} />} />
+      <Route path={Routess.Transactions.path} element={<RouteWithSidebar element={Transactions} />} />
+      <Route path={Routess.Settings.path} element={<RouteWithSidebar element={Settings} />} />
+      <Route path={Routess.BootstrapTables.path} element={<RouteWithSidebar element={BootstrapTables} />} />
+    </Route>
 
-    {/* components */}
+    {/* Components */}
     <Route path={Routess.Accordions.path} element={<RouteWithSidebar element={Accordion} />} />
     <Route path={Routess.Alerts.path} element={<RouteWithSidebar element={Alerts} />} />
     <Route path={Routess.Badges.path} element={<RouteWithSidebar element={Badges} />} />
@@ -133,7 +137,7 @@ export default () => (
     <Route path={Routess.Tooltips.path} element={<RouteWithSidebar element={Tooltips} />} />
     <Route path={Routess.Toasts.path} element={<RouteWithSidebar element={Toasts} />} />
 
-    {/* documentation */}
+    {/* Documentation */}
     <Route path={Routess.DocsOverview.path} element={<RouteWithSidebar element={DocsOverview} />} />
     <Route path={Routess.DocsDownload.path} element={<RouteWithSidebar element={DocsDownload} />} />
     <Route path={Routess.DocsQuickStart.path} element={<RouteWithSidebar element={DocsQuickStart} />} />
@@ -142,6 +146,7 @@ export default () => (
     <Route path={Routess.DocsBuild.path} element={<RouteWithSidebar element={DocsBuild} />} />
     <Route path={Routess.DocsChangelog.path} element={<RouteWithSidebar element={DocsChangelog} />} />
 
+    {/* Redirigir rutas no definidas */}
     <Route path="*" element={<Navigate to={Routess.NotFound.path} />} />
   </Routes>
 );

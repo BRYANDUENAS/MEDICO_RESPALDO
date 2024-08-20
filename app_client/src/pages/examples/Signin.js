@@ -1,5 +1,5 @@
 
-import React, { useState,useEffect  } from "react";
+import React, { useState,useEffect, useContext  } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faUser, faUnlockAlt } from "@fortawesome/free-solid-svg-icons";
 import { faFacebookF, faGithub, faTwitter } from "@fortawesome/free-brands-svg-icons";
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Routess } from "../../routes";
 import BgImage from "../../assets/img/image_login.jpg";
 import '../../css/login.css';
+import { AuthContext } from "../../auth/context/AuthContext";
 
 /* styles.css o cualquier archivo CSS que uses */
 
@@ -17,6 +18,7 @@ const  LoginPage=() => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate(); // Hook para redirigir
+  const {login}= useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -50,6 +52,13 @@ const  LoginPage=() => {
       rowElement.classList.add("slide-in");
     }
   }, []);
+
+  const onLogin=()=>{
+    login('Bryan Dueñas');
+    navigate(Routess.DashboardOverview.path, {
+      replace:true
+    });
+  }
 
   return (
     <main  style={{ backgroundImage: `url(${BgImage})`,backgroundSize: 'cover',  // Asegura que la imagen cubra todo el área
@@ -111,7 +120,7 @@ const  LoginPage=() => {
                     </Form.Check>
                     <Card.Link className="small text-end">Lost password?</Card.Link>
                   </div>
-                  <Button variant="primary" type="submit" className="w-100">
+                  <Button onClick={onLogin} variant="primary" type="submit" className="w-100">
                     Ingresar
                   </Button>
                 </Form>
