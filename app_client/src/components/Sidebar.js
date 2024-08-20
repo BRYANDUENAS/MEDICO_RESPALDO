@@ -101,11 +101,8 @@ export default (props = {}) => {
               <NavItem title="Volt React" link={Routess.Presentation.path} image={ReactHero} />
 
               <NavItem title="Overview" link={Routess.DashboardOverview.path} icon={faChartPie} />
-              <NavItem external title="Messages" link="https://demo.themesberg.com/volt-pro-react/#/messages" target="_blank" badgeText="Pro" icon={faInbox} />
               <NavItem title="Transactions" icon={faHandHoldingUsd} link={Routess.Transactions.path} />
               <NavItem title="Settings" icon={faCog} link={Routess.Settings.path} />
-              <NavItem external title="Calendar" link="https://demo.themesberg.com/volt-pro-react/#/calendar" target="_blank" badgeText="Pro" icon={faCalendarAlt} />
-              <NavItem external title="Map" link="https://demo.themesberg.com/volt-pro-react/#/map" target="_blank" badgeText="Pro" icon={faMapPin} />
 
               <CollapsableNavItem eventKey="tables/" title="Tables" icon={faTable}>
                 <NavItem title="Bootstrap Table" link={Routess.BootstrapTables.path} />
@@ -120,9 +117,6 @@ export default (props = {}) => {
                 <NavItem title="404 Not Found" link={Routess.NotFound.path} />
                 <NavItem title="500 Server Error" link={Routess.ServerError.path} />
               </CollapsableNavItem>
-
-              <NavItem external title="Plugins" link="https://demo.themesberg.com/volt-pro-react/#/plugins/datatable" target="_blank" badgeText="Pro" icon={faChartPie} />
-
               <Dropdown.Divider className="my-3 border-indigo" />
 
               <CollapsableNavItem eventKey="documentation/" title="Getting Started" icon={faBook}>
