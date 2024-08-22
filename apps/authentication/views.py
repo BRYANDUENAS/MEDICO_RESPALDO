@@ -1,15 +1,31 @@
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User,Permission
+from django.contrib.auth.models import User,Permission,Group
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,viewsets
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .serializer import LoginSerializer,UserSerializer,CustomPermissionSerializer
+from .serializer import LoginSerializer,UserSerializer,CustomPermissionSerializer,ChangePasswordSerializer,GroupSerializer
 from .serializer import UserPermissionSerializer
 from rest_framework.permissions import IsAuthenticated
+from .models import Cliente, Empleado,Codigo
+from .serializer import ClienteSerializer, EmpleadoSerializer,CodigoSerializer
+from rest_framework import generics
 
 
 
+"""
+Maestros y cosdigos
+"""
+class CodigoListView(generics.ListAPIView):
+    """
+    Retrieve a list of `Codigo` filtered by the `ma_codigo` of the `Maestro`.
+    """
+    
+    serializer_class = CodigoSerializer
+    
+    def get_queryset(self):
+        ma_codigo = self.kwargs['ma_codigo']  # Obtener el código del maestro de los parámetros de URL
+        return Codigo.objects.filter(ma_idma__ma_codigo=ma_codigo)
 """
 Login
 """
@@ -36,7 +52,28 @@ class LoginAPIView(APIView):
             else:
                 return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+"""
+Cambio de contraseña
+"""
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "Contraseña cambiada con éxito."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+"""
+get grupos
+"""
+class GroupListView(generics.ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = []  # Opcional: añadir permisos si es necesario
+
 """
 Crud permisos
 """
@@ -93,3 +130,15 @@ class UserPermissionViewSet(viewsets.ModelViewSet):
         # Eliminar el permiso del usuario
         user.user_permissions.remove(permission)
         return Response({'detail': 'Permission removed successfully'}, status=status.HTTP_204_NO_CONTENT)
+    
+"""
+Usuarios cliente y empleado 
+"""
+
+class ClienteViewSet(viewsets.ModelViewSet):
+    queryset = Cliente.objects.all()
+    serializer_class = ClienteSerializer
+
+class EmpleadoViewSet(viewsets.ModelViewSet):
+    queryset = Empleado.objects.all()
+    serializer_class = EmpleadoSerializer
