@@ -20,31 +20,6 @@ const  LoginPage=() => {
   const navigate = useNavigate(); // Hook para redirigir
   const {login}= useContext(AuthContext);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    const response = await fetch("http://127.0.0.1:8000/auth/login/", { // Cambia esto al endpoint de tu API
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      
-      // Guardar el token en localStorage o manejarlo según sea necesario
-      localStorage.setItem("token", data.token);
-      // Redirigir al usuario al dashboard o a la página deseada
-      navigate(Routess.Presentation.path); // Utiliza navigate para redirigir
-    } else {
-      // Manejar errores
-      alert("Login failed: " + data.detail);
-    }
-  };
-
   useEffect(() => {
     // Añadir la clase de animación cuando el componente se monta
     const rowElement = document.querySelector(".slide-in-row");
@@ -53,12 +28,11 @@ const  LoginPage=() => {
     }
   }, []);
 
-  const onLogin=()=>{
-    login('Bryan Dueñas');
-    navigate(Routess.DashboardOverview.path, {
-      replace:true
-    });
-  }
+  const onLogin = async (event) => {
+    event.preventDefault();
+    await login(username, password);
+    navigate(Routess.DashboardOverview.path, { replace: true });
+  };
 
   return (
     <main  style={{ backgroundImage: `url(${BgImage})`,backgroundSize: 'cover',  // Asegura que la imagen cubra todo el área
@@ -81,7 +55,7 @@ const  LoginPage=() => {
                 <div className="text-center text-md-center mb-4 mt-md-0">
                   <h3 className="mb-0">Plataforma centro Médico</h3>
                 </div>
-                <Form className="mt-4" onSubmit={handleLogin}>
+                <Form className="mt-4" onSubmit={onLogin}>
                   <Form.Group id="username" className="mb-4">
                     <Form.Label>Usuario</Form.Label>
                     <InputGroup>
@@ -120,7 +94,7 @@ const  LoginPage=() => {
                     </Form.Check>
                     <Card.Link className="small text-end">Lost password?</Card.Link>
                   </div>
-                  <Button onClick={onLogin} variant="primary" type="submit" className="w-100">
+                  <Button variant="primary" type="submit" className="w-100">
                     Ingresar
                   </Button>
                 </Form>

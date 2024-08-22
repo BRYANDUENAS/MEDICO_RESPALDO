@@ -1,3 +1,4 @@
+import axios from 'axios'; // Importamos axios
 import { useReducer } from "react";
 import { AuthContext } from "./AuthContext";
 import { types } from "../types/types";
@@ -14,15 +15,32 @@ const init=()=>{
 export default function AuthProvider({children}) {
   const [authState, dispatch] = useReducer(authReducer,{}, init);
 
-  const login=(name='')=>{
+  const login = async (username = '', password = '') => {
+    try {
+      // Realizamos la petición POST con axios
+      const response = await axios.post('http://127.0.0.1:8000/auth/login/', {
+        username: username,
+        password: password
+      });
 
-    const user ={id:'ABC', name}
-    const action={type:types.login,payload:user}
+      // Si la autenticación es exitosa, recibimos la data del usuario
+      const data = response.data;
+      console.log(data)
+      console.log(data.user)
 
-    localStorage.setItem('user', JSON.stringify(user));
+      // Almacenas el usuario en localStorage
+      localStorage.setItem('user', JSON.stringify(data.user));
 
-    dispatch(action)    
-  }
+      // Disparas la acción de login
+      const action = { type: types.login, payload: data.user };
+      dispatch(action);
+
+    } catch (error) {
+      console.error('Login failed:', error.response ? error.response.data : error.message);
+      // Aquí puedes manejar errores, como mostrar un mensaje de error al usuario
+    }
+  };
+
   
   const logout=()=>{
     localStorage.removeItem('user');

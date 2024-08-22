@@ -1,158 +1,115 @@
-
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import SimpleBar from 'simplebar-react';
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; // Importar useNavigate
 import { CSSTransition } from 'react-transition-group';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faBoxOpen, faChartPie, faCog, faFileAlt, faHandHoldingUsd, faSignOutAlt, faTable, faTimes, faCalendarAlt, faMapPin, faInbox, faRocket } from "@fortawesome/free-solid-svg-icons";
-import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from '@themesberg/react-bootstrap';
+import { faSignOutAlt, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Nav, Button } from '@themesberg/react-bootstrap';
 import { Link } from 'react-router-dom';
 
-
-import { Routess } from "../routes";
-import ThemesbergLogo from "../assets/img/themesberg.svg";
-import ReactHero from "../assets/img/technologies/react-hero-logo.svg";
-import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
+import { Routess } from "../routes"; // Importar las rutas
+import { AuthContext } from "../auth/context/AuthContext";
+import Accordion from "../pages/components/Accordion";
 
 export default (props = {}) => {
   const location = useLocation();
   const { pathname } = location;
   const [show, setShow] = useState(false);
+  const { user } = useContext(AuthContext); // Accedemos al usuario desde el contexto
+  const navigate = useNavigate(); // Hook de navegación
+  
+  console.log(user.user_permissions);
+
   const showClass = show ? "show" : "";
 
   const onCollapse = () => setShow(!show);
 
-  const CollapsableNavItem = (props) => {
-    const { eventKey, title, icon, children = null } = props;
-    const defaultKey = pathname.indexOf(eventKey) !== -1 ? eventKey : "";
+  // Función para renderizar los items de menú
+  const renderMenu = () => {
+    if (!user) {
+      return null; // Si no hay usuario, no mostramos el menú
+    }
 
-    return (
-      <Accordion as={Nav.Item} defaultActiveKey={defaultKey}>
-        <Accordion.Item eventKey={eventKey}>
-          <Accordion.Button as={Nav.Link} className="d-flex justify-content-between align-items-center">
-            <span>
-              <span className="sidebar-icon"><FontAwesomeIcon icon={icon} /> </span>
-              <span className="sidebar-text">{title}</span>
-            </span>
-          </Accordion.Button>
-          <Accordion.Body className="multi-level">
-            <Nav className="flex-column">
-              {children}
-            </Nav>
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
-    );
+    return user.user_permissions.map((menuItem, idx) => {
+      // Lógica para mapear el menú con las rutas definidas en Routess
+      let route;
+      switch (menuItem.name) {
+        case 'mostrar logo':
+          route = Routess.Presentation.path;
+          break;
+        case 'Can add session':
+          route = Routess.Settings.path;
+          break;
+        case 'Can view content type':
+          route = Routess.Upgrade.path;
+          break;
+        case 'Can change user':
+          route = Routess.Transactions.path;
+          break;
+        case 'Settings':
+          route = Routess.Settings.path;
+          break;
+        default:
+          route = '/'; // Ruta por defecto en caso de que no coincida ningún menú
+      }
+
+      return (
+        <NavItem
+          key={idx}
+          title={menuItem.name}
+          onClick={() => navigate(route)} // Navegamos a la ruta correspondiente
+        />
+      );
+    });
   };
 
-  const NavItem = (props) => {
-    const { title, link, external, target, icon, image, badgeText, badgeBg = "secondary", badgeColor = "primary" } = props;
-    const classNames = badgeText ? "d-flex justify-content-start align-items-center justify-content-between" : "";
-    const navItemClassName = link === pathname ? "active" : "";
-    const linkProps = external ? { href: link } : { as: Link, to: link };
-
+  // Componente NavItem que maneja la navegación al hacer clic
+  const NavItem = ({ title, onClick }) => {
+    const navItemClassName = "active";
     return (
-      <Nav.Item className={navItemClassName} onClick={() => setShow(false)}>
-        <Nav.Link {...linkProps} target={target} className={classNames}>
-          <span>
-            {icon ? <span className="sidebar-icon"><FontAwesomeIcon icon={icon} /> </span> : null}
-            {image ? <Image src={image} width={20} height={20} className="sidebar-icon svg-icon" /> : null}
-
-            <span className="sidebar-text">{title}</span>
-          </span>
-          {badgeText ? (
-            <Badge pill bg={badgeBg} text={badgeColor} className="badge-md notification-count ms-2">{badgeText}</Badge>
-          ) : null}
+      <Nav.Item className={navItemClassName} onClick={onClick}>
+        <Nav.Link>
+          <span className="sidebar-icon"></span>
+          <span className="sidebar-text">{title}</span>
         </Nav.Link>
       </Nav.Item>
     );
   };
 
+  const CollapsableNavItem = ({ eventKey, title }) => (
+    <Accordion as={Nav.Item} defaultActiveKey={pathname.indexOf(eventKey) !== -1 ? eventKey : ""}>
+      <Accordion.Item eventKey={eventKey}>
+        <Accordion.Button as={Nav.Link} className="d-flex justify-content-between align-items-center">
+          <span>
+            <span className="sidebar-icon"><FontAwesomeIcon /></span>
+            <span className="sidebar-text">{title}</span>
+          </span>
+        </Accordion.Button>
+        <Accordion.Body className="multi-level">
+          <Nav className="flex-column">
+          </Nav>
+        </Accordion.Body>
+      </Accordion.Item>
+    </Accordion>
+  );
+
   return (
-    <>
-      <Navbar expand={false} collapseOnSelect variant="dark" className="navbar-theme-primary px-4 d-md-none">
-        <Navbar.Brand className="me-lg-5" as={Link} to={Routess.DashboardOverview.path}>
-          <Image src={ReactHero} className="navbar-brand-light" />
-        </Navbar.Brand>
-        <Navbar.Toggle as={Button} aria-controls="main-navbar" onClick={onCollapse}>
-          <span className="navbar-toggler-icon" />
-        </Navbar.Toggle>
-      </Navbar>
-      <CSSTransition timeout={300} in={show} classNames="sidebar-transition">
-        <SimpleBar className={`collapse ${showClass} sidebar d-md-block bg-primary text-white`}>
-          <div className="sidebar-inner px-4 pt-3">
-            <div className="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
-              <div className="d-flex align-items-center">
-                <div className="user-avatar lg-avatar me-4">
-                  <Image src={ProfilePicture} className="card-img-top rounded-circle border-white" />
-                </div>
-                <div className="d-block">
-                  <h6>Hi, Jane</h6>
-                  <Button as={Link} variant="secondary" size="xs" to={Routess.Signin.path} className="text-dark">
-                    <FontAwesomeIcon icon={faSignOutAlt} className="me-2" /> Sign Out
-                  </Button>
-                </div>
-              </div>
-              <Nav.Link className="collapse-close d-md-none" onClick={onCollapse}>
-                <FontAwesomeIcon icon={faTimes} />
-              </Nav.Link>
-            </div>
-            <Nav className="flex-column pt-3 pt-md-0">
-              <NavItem title="Volt React" link={Routess.Presentation.path} image={ReactHero} />
-
-              <NavItem title="Overview" link={Routess.DashboardOverview.path} icon={faChartPie} />
-              <NavItem title="Transactions" icon={faHandHoldingUsd} link={Routess.Transactions.path} />
-              <NavItem title="Settings" icon={faCog} link={Routess.Settings.path} />
-
-              <CollapsableNavItem eventKey="tables/" title="Tables" icon={faTable}>
-                <NavItem title="Bootstrap Table" link={Routess.BootstrapTables.path} />
-              </CollapsableNavItem>
-
-              <CollapsableNavItem eventKey="examples/" title="Page Examples" icon={faFileAlt}>
-                <NavItem title="Sign In" link={Routess.Signin.path} />
-                <NavItem title="Sign Up" link={Routess.Signup.path} />
-                <NavItem title="Forgot password" link={Routess.ForgotPassword.path} />
-                <NavItem title="Reset password" link={Routess.ResetPassword.path} />
-                <NavItem title="Lock" link={Routess.Lock.path} />
-                <NavItem title="404 Not Found" link={Routess.NotFound.path} />
-                <NavItem title="500 Server Error" link={Routess.ServerError.path} />
-              </CollapsableNavItem>
-              <Dropdown.Divider className="my-3 border-indigo" />
-
-              <CollapsableNavItem eventKey="documentation/" title="Getting Started" icon={faBook}>
-                <NavItem title="Overview" link={Routess.DocsOverview.path} />
-                <NavItem title="Download" link={Routess.DocsDownload.path} />
-                <NavItem title="Quick Start" link={Routess.DocsQuickStart.path} />
-                <NavItem title="License" link={Routess.DocsLicense.path} />
-                <NavItem title="Folder Structure" link={Routess.DocsFolderStructure.path} />
-                <NavItem title="Build Tools" link={Routess.DocsBuild.path} />
-                <NavItem title="Changelog" link={Routess.DocsChangelog.path} />
-              </CollapsableNavItem>
-              <CollapsableNavItem eventKey="components/" title="Components" icon={faBoxOpen}>
-                <NavItem title="Accordion" link={Routess.Accordions.path} />
-                <NavItem title="Alerts" link={Routess.Alerts.path} />
-                <NavItem title="Badges" link={Routess.Badges.path} />
-                <NavItem external title="Widgets" link="https://demo.themesberg.com/volt-pro-react/#/components/widgets" target="_blank" badgeText="Pro" />
-                <NavItem title="Breadcrumbs" link={Routess.Breadcrumbs.path} />
-                <NavItem title="Buttons" link={Routess.Buttons.path} />
-                <NavItem title="Forms" link={Routess.Forms.path} />
-                <NavItem title="Modals" link={Routess.Modals.path} />
-                <NavItem title="Navbars" link={Routess.Navbars.path} />
-                <NavItem title="Navs" link={Routess.Navs.path} />
-                <NavItem title="Pagination" link={Routess.Pagination.path} />
-                <NavItem title="Popovers" link={Routess.Popovers.path} />
-                <NavItem title="Progress" link={Routess.Progress.path} />
-                <NavItem title="Tables" link={Routess.Tables.path} />
-                <NavItem title="Tabs" link={Routess.Tabs.path} />
-                <NavItem title="Toasts" link={Routess.Toasts.path} />
-                <NavItem title="Tooltips" link={Routess.Tooltips.path} />
-              </CollapsableNavItem>
-              <NavItem external title="Themesberg" link="https://themesberg.com" target="_blank" image={ThemesbergLogo} />
-              <Button as={Link} to={Routess.Upgrade.path} variant="secondary" className="upgrade-to-pro"><FontAwesomeIcon icon={faRocket} className="me-1" /> Upgrade to Pro</Button>
-            </Nav>
+    <CSSTransition timeout={300} in={show} classNames="sidebar-transition">
+      <SimpleBar className={`collapse ${showClass} sidebar d-md-block bg-primary text-white`}>
+        <div className="sidebar-inner px-4 pt-3">
+          <div className="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
+            <Button as={Link} variant="secondary" size="xs" to="/sign-out" className="text-dark">
+              <FontAwesomeIcon icon={faSignOutAlt} className="me-2" /> Sign Out
+            </Button>
+            <Nav.Link className="collapse-close d-md-none" onClick={onCollapse}>
+              <FontAwesomeIcon icon={faTimes} />
+            </Nav.Link>
           </div>
-        </SimpleBar>
-      </CSSTransition>
-    </>
+          <Nav className="flex-column pt-3 pt-md-0">
+            {renderMenu()} {/* Renderizamos el menú dinámico */}
+          </Nav>
+        </div>
+      </SimpleBar>
+    </CSSTransition>
   );
 };
