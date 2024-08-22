@@ -2,7 +2,7 @@ import re
 from django.contrib.auth.models import User,Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-from .models import Cliente, Empleado,Codigo
+from .models import Cliente, Empleado,Codigo,MenuItem
 from django.contrib.auth.models import User
 
 """
@@ -48,11 +48,28 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ["id",'name', 'permissions']
 
 class UserSerializer(serializers.ModelSerializer):
-    groups = GroupSerializer(many=True, read_only=True)
-    user_permissions = PermissionSerializer(many=True, read_only=True)
+
+    menu_items = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'groups', 'user_permissions']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name','menu_items']
+    def get_menu_items(self, obj):
+        # Obtener todos los menús asignados a los grupos del usuario
+        user_groups = obj.groups.all()
+        menu_items = MenuItem.objects.filter(groups__in=user_groups,is_active=True,nivel=1).distinct().order_by('nivel', 'order')
+        return MenuItemSerializer2(menu_items, many=True).data
+
+class MenuItemSerializer2(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+    groups = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), many=True)
+
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'title', 'url', 'nivel', 'parent', 'groups', 'order', 'icon', 'is_active', 'children']
+
+    def get_children(self, obj):
+        children = obj.children.filter(is_active=True).order_by('order')
+        return MenuItemSerializer2(children, many=True).data if children.exists() else None
 
 #cambio de contraseña
 class ChangePasswordSerializer(serializers.Serializer):
@@ -128,6 +145,26 @@ class UserPermissionSerializer(serializers.ModelSerializer):
         model = User.user_permissions.through
         fields = ["id",'user', 'permission']
 
+
+"""
+Mmenu
+"""
+class MenuItemSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+    groups = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), many=True)
+
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'title', 'url', 'nivel', 'parent', 'groups', 'order', 'icon', 'is_active', 'children']
+
+    def get_children(self, obj):
+        # Filtrar para obtener solo los elementos hijos directos
+        children = obj.children.all().order_by('order')
+        # Usar el mismo serializador para serializar los elementos hijos
+        return MenuItemSerializer(children, many=True).data if children.exists() else None
+
+   
+      
 
 """
 Usuarios cliente y empleado

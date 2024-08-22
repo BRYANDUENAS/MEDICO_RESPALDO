@@ -4,15 +4,25 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,viewsets
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .serializer import LoginSerializer,UserSerializer,CustomPermissionSerializer,ChangePasswordSerializer,GroupSerializer
-from .serializer import UserPermissionSerializer
-from rest_framework.permissions import IsAuthenticated
-from .models import Cliente, Empleado,Codigo
-from .serializer import ClienteSerializer, EmpleadoSerializer,CodigoSerializer
 from rest_framework import generics
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication,TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authtoken.models import Token
 
+
+# importaciones recurrentes
+from .models import Cliente, Empleado,Codigo,MenuItem
+from .serializer import (LoginSerializer
+                         ,UserSerializer
+                         ,CustomPermissionSerializer
+                         ,ChangePasswordSerializer
+                         ,GroupSerializer
+                         ,ClienteSerializer
+                         ,EmpleadoSerializer
+                         ,CodigoSerializer
+                         ,UserPermissionSerializer
+                         ,MenuItemSerializer
+                         )
 
 """
 Maestros y códigos
@@ -22,7 +32,7 @@ class CodigoListView(generics.ListAPIView):
     Retrieve a list of `Codigo` filtered by the `ma_codigo` of the `Maestro`.
     """
     serializer_class = CodigoSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -33,7 +43,7 @@ class CodigoListView(generics.ListAPIView):
 Login
 """
 class LoginAPIView(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = []
     permission_classes = [AllowAny]  # Permitir a cualquier usuario acceder a esta vista
 
     def post(self, request):
@@ -45,22 +55,39 @@ class LoginAPIView(APIView):
             if user is not None:
                 login(request, user)
                 
+                # Obtener o crear un token para el usuario
+                token, created = Token.objects.get_or_create(user=user)
+
                 # Serializar los datos completos del usuario
                 user_serializer = UserSerializer(user)
                 
                 return Response({
                     "detail": "Successfully logged in",
+                    "token": token.key,
                     "user": user_serializer.data
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+## logout
+class LogoutAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Obtener el token asociado al usuario actual
+        token = Token.objects.filter(user=request.user).first()
+        
+        if token:
+            token.delete()  # Eliminar el token
+        
+        return Response({'detail': 'Successfully logged out'}, status=status.HTTP_204_NO_CONTENT)
 
 """
 Cambio de contraseña
 """
 class ChangePasswordView(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -76,7 +103,7 @@ get grupos
 class GroupListView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]  # Restringir acceso solo a usuarios autenticados
 
 """
@@ -86,7 +113,7 @@ Crud permisos
 class CustomPermissionListCreateAPIView(generics.ListCreateAPIView):
     queryset = Permission.objects.filter()
     serializer_class = CustomPermissionSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]  # Restringir acceso solo a usuarios autenticados
 
     def create(self, request, *args, **kwargs):
@@ -96,7 +123,7 @@ class CustomPermissionListCreateAPIView(generics.ListCreateAPIView):
 class CustomPermissionDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Permission.objects.filter()
     serializer_class = CustomPermissionSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]  # Restringir acceso solo a usuarios autenticados
 
 """
@@ -105,7 +132,7 @@ Crud permisos - usuarios
 
 class UserPermissionViewSet(viewsets.ModelViewSet):
     serializer_class = UserPermissionSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -146,11 +173,25 @@ Usuarios cliente y empleado
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]  # Restringir acceso solo a usuarios autenticados
 
 class EmpleadoViewSet(viewsets.ModelViewSet):
     queryset = Empleado.objects.all()
     serializer_class = EmpleadoSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]  # Restringir acceso solo a usuarios autenticados
+
+
+"""
+Menu recursivo
+"""
+class MenuItemViewSet(viewsets.ModelViewSet):
+    queryset = MenuItem.objects.all()
+    serializer_class = MenuItemSerializer
+    
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filtrar los elementos activos o cualquier otro filtro necesario
+        return MenuItem.objects.filter(nivel=1).order_by('order')

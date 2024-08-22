@@ -64,3 +64,23 @@ class Empleado(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - Empleado"
+    
+
+"""
+Menu 
+"""
+class MenuItem(models.Model):
+    title = models.CharField(max_length=100)
+    url = models.CharField(max_length=200, blank=True, null=True)
+    nivel = models.PositiveIntegerField(default=1)  # Nivel en la jerarquía del menú
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    groups = models.ManyToManyField(Group, related_name='menu_items')
+    order = models.PositiveIntegerField(default=0)
+    icon = models.CharField(max_length=50, blank=True, null=True, help_text="Clase CSS para el ícono (por ejemplo, 'fa fa-home').")
+    is_active = models.BooleanField(default=True, help_text="Indica si el elemento del menú está activo o no.")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['nivel', 'order']
