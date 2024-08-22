@@ -33,17 +33,17 @@ export default (props = {}) => {
     return user.user_permissions.map((menuItem, idx) => {
       // Lógica para mapear el menú con las rutas definidas en Routess
       let route;
-      switch (menuItem.name) {
-        case 'mostrar logo':
-          route = Routess.Presentation.path;
+      switch (menuItem.codename) {
+        case 'mostra_logo':
+          route = Routess.User.path;
           break;
-        case 'Can add session':
+        case 'delete_user':
           route = Routess.Settings.path;
           break;
-        case 'Can view content type':
+        case 'view_user':
           route = Routess.Upgrade.path;
           break;
-        case 'Can change user':
+        case 'mostrar_dashboard':
           route = Routess.Transactions.path;
           break;
         case 'Settings':
@@ -56,7 +56,7 @@ export default (props = {}) => {
       return (
         <NavItem
           key={idx}
-          title={menuItem.name}
+          title={menuItem.codename}
           onClick={() => navigate(route)} // Navegamos a la ruta correspondiente
         />
       );

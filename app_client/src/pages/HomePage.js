@@ -49,6 +49,7 @@ import Tabs from "./components/Tabs";
 import Tooltips from "./components/Tooltips";
 import Toasts from "./components/Toasts";
 import { PrivateRoutes } from '../routes/PrivateRoutes';
+import UserPage from './UserPage';
 
 const RouteWithLoader = ({ element: Element, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
@@ -117,6 +118,7 @@ export default () => (
       <Route path={Routess.Transactions.path} element={<RouteWithSidebar element={Transactions} />} />
       <Route path={Routess.Settings.path} element={<RouteWithSidebar element={Settings} />} />
       <Route path={Routess.BootstrapTables.path} element={<RouteWithSidebar element={BootstrapTables} />} />
+      <Route path={Routess.User.path} element={<RouteWithSidebar element={UserPage} />} />
     </Route>
 
     {/* Components */}
