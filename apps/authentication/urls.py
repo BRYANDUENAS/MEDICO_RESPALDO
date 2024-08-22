@@ -5,8 +5,9 @@ from apps.authentication import views
 from rest_framework.documentation import include_docs_urls
 from .views import CustomPermissionListCreateAPIView, CustomPermissionDetailAPIView,UserPermissionViewSet
 from django.urls import path
-from .views import LoginAPIView,ClienteViewSet, EmpleadoViewSet,ChangePasswordView,GroupListView,CodigoListView
 from rest_framework.routers import DefaultRouter
+from .views import LoginAPIView,ClienteViewSet, EmpleadoViewSet,ChangePasswordView,GroupListView,CodigoListView,MenuItemViewSet
+
 
 
 """
@@ -16,6 +17,7 @@ router = DefaultRouter()
 router.register(r'user-permissions', UserPermissionViewSet, basename='user-permissions')
 router.register(r'clientes', ClienteViewSet)
 router.register(r'empleados', EmpleadoViewSet)
+router.register(r'menu-items', MenuItemViewSet, basename='menuitem')
 
 
 

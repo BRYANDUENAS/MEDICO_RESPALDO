@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'rest_framework.authtoken',
     "rest_framework",
     "corsheaders",
     "coreapi",
@@ -96,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'app_medico',
         'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'Will123',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -151,5 +152,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication', ],
+     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny',  ],
 }
