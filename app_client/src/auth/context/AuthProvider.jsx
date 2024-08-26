@@ -1,14 +1,15 @@
 import axios from 'axios'; // Importamos axios
-import { useReducer } from "react";
+import { useReducer, useContext } from "react";
 import { AuthContext } from "./AuthContext";
 import { types } from "../types/types";
 import { authReducer } from "./authReducer";
+import { UserGroupsContext } from '../../gruposContext/UserGroupsContext';
 
 const init=()=>{
    const user= JSON.parse(localStorage.getItem('user'));
    return{
     logged: !!user,
-    user:user,
+    user:user || null,
    }
 }
 
@@ -25,14 +26,11 @@ export default function AuthProvider({children}) {
 
       // Si la autenticación es exitosa, recibimos la data del usuario
       const data = response.data;
-      console.log(data)
-      console.log(data.user)
-
       // Almacenas el usuario en localStorage
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('user', JSON.stringify(data));
 
       // Disparas la acción de login
-      const action = { type: types.login, payload: data.user };
+      const action = { type: types.login, payload: data};
       dispatch(action);
 
     } catch (error) {
@@ -45,7 +43,7 @@ export default function AuthProvider({children}) {
   const logout=()=>{
     localStorage.removeItem('user');
     const action={type:types.logout}
-    dispatch(action)    
+    dispatch(action)         
   }
 
 

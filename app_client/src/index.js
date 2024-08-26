@@ -26,14 +26,20 @@ import "react-datetime/css/react-datetime.css";
 import HomePage from "./pages/HomePage";
 import ScrollToTop from "./components/ScrollToTop";
 import AuthProvider from './auth/context/AuthProvider';
+import { UserGroupsProvider } from './gruposContext/UserGroupsContext';
+import { MenuProvider } from './menu/menuContext';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <AuthProvider>
-    <HashRouter>
-      <ScrollToTop/>
-      <HomePage/>
-    </HashRouter>
+    <UserGroupsProvider>
+      <HashRouter>
+        <ScrollToTop />
+        <MenuProvider>
+          <HomePage/>
+        </MenuProvider>
+      </HashRouter>
+    </UserGroupsProvider>
   </AuthProvider>
-  
+
 );

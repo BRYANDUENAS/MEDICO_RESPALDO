@@ -1,14 +1,11 @@
 
-import React, { useState } from "react";
-import moment from "moment-timezone";
-import Datetime from "react-datetime";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import React, { useContext, useState } from "react";
 import { Col, Row, Card, Form, Button, InputGroup } from '@themesberg/react-bootstrap';
+import { UserGroupsContext } from "../gruposContext/UserGroupsContext";
 
 
 export const GeneralInfoForm = () => {
-  const [birthday, setBirthday] = useState("");
+  const { userGroups} = useContext(UserGroupsContext);
 
   return (
     <Card border="light" className="bg-white shadow-sm mb-4">
@@ -41,19 +38,28 @@ export const GeneralInfoForm = () => {
                 <Form.Label>Nombre de usuario</Form.Label>
                 <Form.Control required type="text" placeholder="Username" />
               </Form.Group>
-            </Col>            
+            </Col>
           </Row>
           <Row>
             <Col sm={6} className="mb-3">
               <Form.Group className="mb-2">
                 <Form.Label>Tipo de usuario</Form.Label>
                 <Form.Select id="state" defaultValue="0">
-                  <option value="0">Administrador</option>
-                  <option value="AL">Doctor</option>
-                  <option value="AK">Enfermero</option>   
-                  <option value="A">Paciente</option>  
-                  <option value="K">Recepcionista</option>                 
+                  <option value="0">Seleccione un grupo</option>
+                  {(() => {
+                    try {
+                      return userGroups.map(group => (
+                        <option key={group.id} value={group.id}>
+                          {group.name}
+                        </option>
+                      ));
+                    } catch (error) {
+                      console.error("Error al mapear grupos de usuarios:", error);
+                      return <option value="0" disabled>Error cargando grupos</option>;
+                    }
+                  })()}
                 </Form.Select>
+
               </Form.Group>
             </Col>
             <Col md={6} className="mb-3">
@@ -63,9 +69,6 @@ export const GeneralInfoForm = () => {
               </Form.Group>
             </Col>
           </Row>
-          <div className="mt-3">
-            <Button variant="primary" type="submit">Save All</Button>
-          </div>
         </Form>
       </Card.Body>
     </Card>

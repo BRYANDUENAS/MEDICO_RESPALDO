@@ -1,0 +1,39 @@
+.custom-accordion .accordion-button {
+    background-color: #262B40; /* Color de fondo para el botón del acordeón */
+    color: #ffffff; /* Color del texto para el botón del acordeón */
+  }
+  
+  .custom-accordion .accordion-button:not(.collapsed) {
+    color: #ffffff; /* Color del texto para el botón del acordeón cuando está expandido */
+  }
+  
+  .custom-accordion .accordion-body {
+    background-color: #262B40; /* Color de fondo para el cuerpo del acordeón */
+    color: #ffffff; /* Color del texto para el cuerpo del acordeón */
+  }
+  
+  .custom-accordion .custom-nav-link {
+    color: #ffffff; /* Color del texto del enlace de navegación */
+  }
+  
+  .custom-accordion .custom-header {
+    background-color: #262B40; /* Color de fondo para el encabezado del acordeón */
+    color: #ffffff; /* Color del texto del encabezado del acordeón */
+  }
+  
+  .custom-accordion .custom-card {
+    background-color: #262B40; /* Color de fondo para la tarjeta del acordeón */
+    border: none; /* Eliminar el borde de la tarjeta */
+  }
+
+.button_hamburguer{
+    top: '10px';
+    left: '10px';
+    background-color: '#262B40';
+    border: 'none'; 
+    padding: '0.5rem'; 
+    padding-inline:'0.9rem';
+    border-radius: '4px'; 
+    color: 'white';
+  }
+  
