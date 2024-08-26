@@ -5,6 +5,7 @@ export const Routess = {
     DashboardOverview: { path: "/dashboard/overview" },
     Transactions: { path: "/transactions" },
     Settings: { path: "/settings" },
+    User: { path: "/user" },
     Upgrade: { path: "/upgrade" },
     BootstrapTables: { path: "/tables/bootstrap-tables" },
     Billing: { path: "/examples/billing" },

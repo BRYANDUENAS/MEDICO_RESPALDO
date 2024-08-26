@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Routes, Navigate } from "react-router-dom";
 import { Routess } from "../routes";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // pages
 import Presentation from "./Presentation";
@@ -49,10 +51,12 @@ import Tabs from "./components/Tabs";
 import Tooltips from "./components/Tooltips";
 import Toasts from "./components/Toasts";
 import { PrivateRoutes } from '../routes/PrivateRoutes';
+import UserPage from './UserPage';
+import { Button } from '@themesberg/react-bootstrap';
+import '../../src/assets/acordion.css';
 
 const RouteWithLoader = ({ element: Element, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
-
   useEffect(() => {
     const timer = setTimeout(() => setLoaded(true), 1000);
     return () => clearTimeout(timer);
@@ -68,6 +72,12 @@ const RouteWithLoader = ({ element: Element, ...rest }) => {
 
 const RouteWithSidebar = ({ element: Element, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar);
+  };
+
 
   useEffect(() => {
     const timer = setTimeout(() => setLoaded(true), 1000);
@@ -87,14 +97,23 @@ const RouteWithSidebar = ({ element: Element, ...rest }) => {
 
   return (
     <>
-      <Preloader show={loaded ? false : true} />
-      <Sidebar />
-
-      <main className="content">
-        <Navbar />
-        <Element {...rest} />
-        <Footer toggleSettings={toggleSettings} showSettings={showSettings} />
-      </main>
+      <Preloader show={loaded ? false : true} />  
+      <div className={showSidebar ? "" : "d-none"}>
+        <Sidebar showSidebar={showSidebar} />
+      </div>   
+      <main 
+          className={showSidebar ? "content" : "w-100 ps-6 pe-4"}
+        >
+        <div className="d-flex justify-content-between align-items-center">
+          <Button onClick={toggleSidebar} className='button_hamburguer'
+          >
+            <FontAwesomeIcon icon={faBars} />
+          </Button> 
+            <Navbar />
+        </div>        
+          <Element {...rest} />
+          <Footer toggleSettings={toggleSettings} showSettings={showSettings} />
+        </main>
     </>
   );
 };
@@ -117,6 +136,7 @@ export default () => (
       <Route path={Routess.Transactions.path} element={<RouteWithSidebar element={Transactions} />} />
       <Route path={Routess.Settings.path} element={<RouteWithSidebar element={Settings} />} />
       <Route path={Routess.BootstrapTables.path} element={<RouteWithSidebar element={BootstrapTables} />} />
+      <Route path={Routess.User.path} element={<RouteWithSidebar element={UserPage} />} />
     </Route>
 
     {/* Components */}
