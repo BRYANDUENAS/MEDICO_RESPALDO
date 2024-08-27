@@ -28,6 +28,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import AuthProvider from './auth/context/AuthProvider';
 import { UserGroupsProvider } from './gruposContext/UserGroupsContext';
 import { MenuProvider } from './menu/menuContext';
+import { UserProvider } from './Providers/UserProvider';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -36,7 +37,9 @@ root.render(
       <HashRouter>
         <ScrollToTop />
         <MenuProvider>
-          <HomePage/>
+          <UserProvider>
+            <HomePage/>
+          </UserProvider>
         </MenuProvider>
       </HashRouter>
     </UserGroupsProvider>

@@ -1,338 +1,345 @@
-import React, { useContext, useState } from "react";
-import { Card, Form, Button, Row, Col, Table, Alert, Spinner, Modal } from '@themesberg/react-bootstrap';
-import { MenuContext } from "../../src/menu/menuContext";
-import { UserGroupsContext } from "../gruposContext/UserGroupsContext";
+import { useContext, useState } from "react";
+import { Card, Button, Form, Table, Modal } from 'react-bootstrap';
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import toast, { Toaster } from 'react-hot-toast';
+import { UserContext } from "../Providers/UserProvider";
+import { UserGroupsContext } from "../gruposContext/UserGroupsContext";
 
 export default () => {
-
-  //LLAMADO DE CONTEXTOS NECESARIOS PARA EL CRUD DE MENUS//
-  const { menuItems, loading, error, addMenuItem, deleteMenuItem, updateMenuItem } = useContext(MenuContext);
+    
+  const { usersEmpleadosItems, usersClientesItems,loading, error,  addUserClientItem,addUserEmployeeItem} = useContext(UserContext);
   const { userGroups } = useContext(UserGroupsContext);
 
-  // GENERARMOS LAS VARIABLES Y ESTADOS QUE VAN A INTERVENIR EN EL CRUD DE MENUS //
-  const [menuName, setMenuName] = useState('');
-  const [menuURL, setMenuURL] = useState('');
-  const [menuLevel, setMenuLevel] = useState('');
-  const [menuOrder, setMenuOrder] = useState('');
-  const [assignedGroups, setAssignedGroups] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
-  const [menuToDelete, setMenuToDelete] = useState(null);
-  const [menuToEdit, setMenuToEdit] = useState(null);
+  const [selectedOption, setSelectedOption] = useState('Clientes');
 
-  if (loading) {
-    return <Spinner animation="border" />;
-  }
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
 
-  if (error) {
-    return <Alert variant="danger">Error al cargar los datos: {error.message}</Alert>;
-  }
+  const [clientData, setClientData] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    detalleCita: '',
+    tipoCliente: '' // ID del grupo seleccionado
+  });
 
-  // METODO PARA ASIGNAR LOS GRUPOS EN UN ARREGLO YA SEA PARA CREAR O EDITAR//
-  const handleGroupSelection = (groupId) => {
-    const newGroups = assignedGroups.includes(groupId)
-      ? assignedGroups.filter(g => g !== groupId)
-      : [...assignedGroups, groupId];
-    setAssignedGroups(newGroups);
+  const [employeeData, setEmployeeData] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    cargo: '', // ID del grupo seleccionado
+  });
+
+
+  // Maneja los cambios en los campos del formulario de cliente
+  const handleClientInputChange = (e) => {
+    const { name, value } = e.target;
+    setClientData(prevState => ({ ...prevState, [name]: value }));
   };
 
-
-  // LOGICA PARA AÑADIR UN NUEVO MENU//
-  const handleAddMenu = async (e) => {
-    e.preventDefault();
-    try {
-      const menuData = {
-        title: menuName,
-        url: menuURL,
-        nivel: menuLevel,
-        order: menuOrder,
-        groups: assignedGroups,
-      };
-      await addMenuItem(menuData);
-      toast.success('Menú agregado con éxito');
-      handleCloseModal();
-    } catch (error) {
-      toast.error('Error al agregar el menú');
-    }
+  // Maneja los cambios en los campos del formulario de empleado
+  const handleEmployeeInputChange = (e) => {
+    const { name, value } = e.target;
+    setEmployeeData(prevState => ({ ...prevState, [name]: value }));
   };
 
-
-  //LOGICA PARA ACTUALIZAR UN MENU//
-  const handleUpdateMenu = async (e) => {
-    e.preventDefault();
-    const menuData = {
-      title: menuName,
-      url: menuURL,
-      nivel: menuLevel,
-      order: menuOrder,
-      groups: assignedGroups,
+  // Lógica para guardar un nuevo cliente
+  const handleSaveClient = async () => {
+    const newClientData = {
+      user: {
+        username: clientData.username,
+        first_name: clientData.first_name,
+        last_name: clientData.last_name,
+        email: clientData.email,
+      },
+      ficha_medica: clientData.detalleCita,
+      group_name: clientData.tipoCliente
     };
+    
     try {
-      await updateMenuItem(menuToEdit.id, menuData);  // Aquí se llama a la función del contexto
-      toast.success('Menú actualizado con éxito');
-      handleCloseModal();
+      await addUserClientItem(newClientData);
+      toast.success('Cliente guardado exitosamente');
+      handleClientModalClose();
     } catch (error) {
-      toast.error('Error al actualizar el menú');
+      toast.error('Error al guardar el cliente');
     }
   };
 
-  // AL APLASTAREL BOTON EDITAR EN LA TABLA ACTUALIZAMOS EL ESTADO DEL OBJETO DE TIPO MENU QUE SE ENVIARA//
-  const handleEdit = (item) => {
-    setMenuToEdit(item);
-    setMenuName(item.title);
-    setMenuURL(item.url);
-    setMenuLevel(item.nivel);
-    setMenuOrder(item.order);
-    setAssignedGroups(item.groups || []);
-    setIsEditing(true);
-    setShowModal(true);
-  };
-
-
-  // CUANDO DAMOS CLICK EN NUEVO MENU DEJAMOS UN OBJETO DE TIPO MENU 
-  //   EN BLANCO PARA ENVIAR AL API LLENADO POR EL USUARIO
-  const handleAddNewMenu = () => {
-    setMenuName('');
-    setMenuURL('');
-    setMenuLevel('');
-    setMenuOrder('');
-    setAssignedGroups([]);
-    setIsEditing(false);
-    setShowModal(true);
-  };
-
-
-  //METODO PARA CERRAR EL MODAL Y LIMPIAR LOS VALORES //
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setMenuName('');
-    setMenuURL('');
-    setMenuLevel('');
-    setMenuOrder('');
-    setAssignedGroups([]);
-  };
-
-
-  // METODO DONDE SE HABRE UN MODAL QUE SI EL USUARIO DA ACEPTAR PROXIMAMENTE SE ELIMNA EL MENU //
-  const handleDelete = (id) => {
-    setMenuToDelete(id);
-    setShowConfirmDeleteModal(true);
-  };
-
-
-  // METODO DONDE SI EL USUARIO CONFIRMA LA ELIMINACION SE ELIMINA EL MENU//
-  const confirmDelete = async () => {
+  // Lógica para guardar un nuevo empleado
+  const handleSaveEmployee = async () => {
+    const newEmployeeData = {
+      user: {
+        username: employeeData.username,
+        first_name: employeeData.first_name,
+        last_name: employeeData.last_name,
+        email: employeeData.email,
+      },
+      cargo: 'Administrador',
+      group_name: 'Administrador'
+    };
+    
     try {
-      await deleteMenuItem(menuToDelete);
-      toast.success('Menú eliminado con éxito');
+      await addUserEmployeeItem(newEmployeeData);
+      toast.success('Empleado guardado exitosamente');
+      handleEmployeeModalClose();
     } catch (error) {
-      toast.error('Error al eliminar el menú');
+      toast.error('Error al guardar el empleado');
     }
-    setShowConfirmDeleteModal(false);
-    setMenuToDelete(null);
   };
 
-
-  //EL USUARIO CANCELO EL METODO ELIMINAR ENTONCES NO SE ELIMINA EL MENU//
-  const cancelDelete = () => {
-    setShowConfirmDeleteModal(false);
-    setMenuToDelete(null);
+  // Maneja el cambio en la selección de radio buttons
+  const handleRadioChange = (event) => {
+    setSelectedOption(event.target.value);
   };
 
+  const handleClientModalShow = () => setShowClientModal(true);
+  const handleClientModalClose = () => setShowClientModal(false);
 
+  const handleEmployeeModalShow = () => setShowEmployeeModal(true);
+  const handleEmployeeModalClose = () => setShowEmployeeModal(false);
 
   // ESTE ES EL COMPONENTE DONDE SE MUESTRA LA TABLA DINAMICA CON LOS MENUS QUE EXISTEN
   // Y TAMBIEN ESTAN LOS MODALES QUE SON LLAMADOS DEPENDIENDO DE LA ACCION QUE SE REALICE
   return (
     <div className="container mt-4">
-
-
       <Card className="shadow-sm">
         <Card.Body>
-          <h2 className="text-center mb-2">Configuración de Menú</h2>
-          <div className="py-3">
-            <Button variant="secondary" className="text-dark me-2" onClick={handleAddNewMenu}>
+          <h2 className="text-center mb-2">Configuración de Usuarios</h2>          
+           {/* Radio Buttons */}
+           <Form>
+            <div className="mb-3">
+              <Form.Check type="radio" label="Empleados" name="userType" value="Empleados"
+                checked={selectedOption === 'Empleados'}
+                onChange={handleRadioChange}
+                inline 
+              />
+              <Form.Check type="radio" label="Clientes"  name="userType" value="Clientes"
+                checked={selectedOption === 'Clientes'}
+                onChange={handleRadioChange}
+                inline 
+              />
+            </div>
+          </Form>
+          
+          {!loading && !error && selectedOption === 'Clientes' && (
+        <div>
+            <Button variant="secondary" className="text-dark me-2 mb-3"  onClick={handleClientModalShow}>
               <FontAwesomeIcon icon={faPlus} className="me-2" />
-              <span>Nuevo Menú</span>
+              <span>Nuevo Cliente</span>
             </Button>
-          </div>
-          <Table striped bordered hover responsive className="mt-4">
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>URL</th>
-                <th>Nivel</th>
-                <th>Orden</th>
-                <th>Grupos</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* AQUI ITERAMOS LOS MENUS DE NIVEL 1 */}
-              {menuItems.map((item) => (
-                <React.Fragment key={item.id}>
-                  <tr>
-                    <td>{item.title}</td>
-                    <td>{item.url}</td>
-                    <td>{item.nivel}</td>
-                    <td>{item.order}</td>
-                    <td>{Array.isArray(item.groups) ? item.groups.join(', ') : ''}</td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        className="me-2"
-                        onClick={() => handleEdit(item)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </td>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Nombre de Usuario</th>
+                  <th>Email</th>
+                  <th>Detalle Medico</th>
+                  {/* Añadir más columnas si es necesario */}
+                </tr>
+              </thead>
+              <tbody>
+                {usersClientesItems.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.user.first_name + ' ' + item.user.last_name}</td>
+                    <td>{item.user.email}</td>
+                    <td>{item.ficha_medica}</td>
                   </tr>
-                  {/* AQUI ITERAMOS LOS MENUS DE NIVEL 2 */}
-                  {item.children && item.children.length > 0 && item.children.map((child) => (
-                    <tr key={child.id}>
-                      <td style={{ paddingLeft: '20px' }}>{child.title}</td>
-                      <td>{child.url}</td>
-                      <td>{child.nivel}</td>
-                      <td>{child.order}</td>
-                      <td>{Array.isArray(child.groups) ? child.groups.join(', ') : ''}</td>
-                      <td>
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleEdit(child)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDelete(child.id)}
-                        >
-                          Eliminar
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </Table>
+                ))}
+              </tbody>
+            </Table>
+            </div>
+          )}
 
-          {/* AQUI TENEMOS EL MODAL QUE DEPENDE DE LA ACCION SI ES CREAR O EDITAR SE ABRE
-              CON DISTINTA FUNCIONALIDAD, EOS YA LO CONTROLA EL STATE */}
-          <Modal show={showModal} onHide={handleCloseModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>{isEditing ? "Editar Menú" : "Nuevo Menú"}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form onSubmit={isEditing ? handleUpdateMenu : handleAddMenu}>
-                <Row className="mb-3">
-                  <Col xs={12} md={6}>
-                    <Form.Group controlId="menuName">
-                      <Form.Label>Nombre del Menú</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Ingrese el nombre del menú"
-                        value={menuName}
-                        onChange={(e) => setMenuName(e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <Form.Group controlId="menuURL">
-                      <Form.Label>URL del Menú</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="/ejemplo-url/"
-                        value={menuURL}
-                        onChange={(e) => setMenuURL(e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row className="mb-3">
-                  <Col xs={12} md={6}>
-                    <Form.Group controlId="menuLevel">
-                      <Form.Label>Nivel del Menú</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Ingrese el nivel del menú"
-                        value={menuLevel}
-                        onChange={(e) => setMenuLevel(e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <Form.Group controlId="menuOrder">
-                      <Form.Label>Orden del Menú</Form.Label>
-                      <Form.Control
-                        type="number"
-                        placeholder="Ingrese el orden del menú"
-                        value={menuOrder}
-                        onChange={(e) => setMenuOrder(e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Form.Group>
-                      <Form.Label>Grupos Asignados</Form.Label>
-                      {userGroups.map(group => (
-                        <Form.Check
-                          key={group.id}
-                          type="checkbox"
-                          label={group.name}
-                          checked={assignedGroups.includes(group.id)}
-                          onChange={() => handleGroupSelection(group.id)}
-                        />
-                      ))}
-                    </Form.Group>
-                  </Col>
-                </Row>
-                {isEditing ? (
-                  <Button variant="primary" type="submit" className="w-100 mt-3">
-                    Actualizar Menú
-                  </Button>
-                ) : (
-                  <Button variant="success" type="submit" className="w-100 mt-3">
-                    Agregar Menú
-                  </Button>
-                )}
-              </Form>
-            </Modal.Body>
-          </Modal>
-
-          {/* ESTE MODAL ES PARA CONFIRMAR SI SE DESEA ELIMINAR O NO EL MENU SELECCIONADO */}
-          <Modal show={showConfirmDeleteModal} onHide={cancelDelete}>
-            <Modal.Header closeButton>
-              <Modal.Title>Confirmar Eliminación</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>¿Está seguro de que desea eliminar este menú?</Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={cancelDelete}>
-                Cancelar
-              </Button>
-              <Button variant="danger" onClick={confirmDelete}>
-                Eliminar
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          {!loading && !error && selectedOption === 'Empleados' && (
+             <div >
+             <Button variant="secondary" className="text-dark me-2 mb-3"  onClick={handleEmployeeModalShow}>
+               <FontAwesomeIcon icon={faPlus} className="me-2" />
+               <span>Nuevo Empleado</span>
+             </Button>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Nombre de Usuario</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Posición</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usersEmpleadosItems.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.user.first_name +' '+ item.user.last_name }</td>
+                    <td>{item.user.username}</td>
+                    <td>{item.user.email}</td>
+                    <td>{item.cargo}</td> 
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            </div>
+          )}
         </Card.Body>
       </Card>
+       {/* Modal para Nuevo Cliente */}
+       <Modal show={showClientModal} onHide={handleClientModalClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Nuevo Cliente</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Ingrese el nombre" 
+                name="first_name" 
+                value={clientData.first_name} 
+                onChange={handleClientInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Apellido</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Ingrese el apellido" 
+                name="last_name" 
+                value={clientData.last_name} 
+                onChange={handleClientInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control 
+                type="email" 
+                placeholder="Ingrese el email" 
+                name="email" 
+                value={clientData.email} 
+                onChange={handleClientInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Username</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Ingrese el username" 
+                name="username" 
+                value={clientData.username} 
+                onChange={handleClientInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Detalle de la cita</Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows={3} 
+                placeholder="Ingrese el detalle de la cita" 
+                name="detalleCita" 
+                value={clientData.detalleCita} 
+                onChange={handleClientInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tipo de Cliente</Form.Label>
+              <Form.Select 
+                name="tipoCliente" 
+                value={clientData.tipoCliente} 
+                onChange={handleClientInputChange}>
+                {userGroups
+                  .filter(group => group.name === 'Paciente')
+                  .map(group => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClientModalClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleSaveClient}>
+            Guardar Cliente
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal para Nuevo Empleado */}
+      <Modal show={showEmployeeModal} onHide={handleEmployeeModalClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Nuevo Empleado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Ingrese el nombre" 
+                name="first_name" 
+                value={employeeData.first_name} 
+                onChange={handleEmployeeInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Apellido</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Ingrese el apellido" 
+                name="last_name" 
+                value={employeeData.last_name} 
+                onChange={handleEmployeeInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control 
+                type="email" 
+                placeholder="Ingrese el email" 
+                name="email" 
+                value={employeeData.email} 
+                onChange={handleEmployeeInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Username</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Ingrese el username" 
+                name="username" 
+                value={employeeData.username} 
+                onChange={handleEmployeeInputChange} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Cargo</Form.Label>
+              <Form.Select 
+                name="cargo" 
+                value={employeeData.cargo} 
+                onChange={handleEmployeeInputChange}>
+                {userGroups
+                  .filter(group => group.name !== 'Paciente')
+                  .map(group => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleEmployeeModalClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleSaveEmployee}>
+            Guardar Empleado
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Toaster />
     </div>
   );

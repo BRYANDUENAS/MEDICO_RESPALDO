@@ -3,9 +3,10 @@ export const Routess = {
     // pages
     Presentation: { path: "/" },
     DashboardOverview: { path: "/dashboard/overview" },
+    Usuario: { path: "/usuario" },
     Transactions: { path: "/transactions" },
     Settings: { path: "/settings" },
-    User: { path: "/user" },
+    Menu: { path: "/menu" },
     Upgrade: { path: "/upgrade" },
     BootstrapTables: { path: "/tables/bootstrap-tables" },
     Billing: { path: "/examples/billing" },

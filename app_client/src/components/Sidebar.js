@@ -19,13 +19,13 @@ const Sidebar = ({ showSidebar }) => {
       let route;
       switch (menuItem.title) {
         case 'Configuracion':
-          route = Routess.User.path;
+          route = Routess.Menu.path;
           break;
         case 'Perfil':
           route = Routess.Settings.path;
           break;
-        case 'Can view content type':
-          route = Routess.Upgrade.path;
+        case 'Usuario':
+          route = Routess.Usuario.path;
           break;
         case 'Can change user':
           route = Routess.Transactions.path;
